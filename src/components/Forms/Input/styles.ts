@@ -16,10 +16,3 @@ export const Container = styled(TextInput)`
     margin-bottom: 8px;
 `;
 
-export const Form = styled.View`
-    flex: 1;
-
-    width: 100%;
-
-    padding: 24px;
-`;
