@@ -138,7 +138,6 @@ export function Register(){
             <Button 
                 title="Enviar" 
                 onPress={handleSubmit(handleRegister)}
-                activeOpacity={0.7}
             />
         </Form>
 
