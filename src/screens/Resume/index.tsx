@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { VictoryPie } from 'victory-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { useTheme } from 'styled-components';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 import { HistoryCard } from '../../components/HistoryCard';
 
@@ -8,6 +12,11 @@ import {
     Header,
     Title,
     Content,
+    ChartContainer,
+    MonthSelect,
+    MonthSelectButton,
+    MonthSelectIcon,
+    Month,
 } from './styles';
 
 import { categories } from '../../utils/categories';
@@ -23,12 +32,16 @@ interface TransactionData {
 interface CategoryData {
     key: string;
     name: string;
-    total: string;
+    total: number;
+    totalFormatted: string;
     color: string;
+    percent: string;
 }
 
 export function Resume(){
     const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>([]); 
+
+    const theme = useTheme();
 
     async function loadData() { //Filtro de transações de saídas
         const dataKey = '@gofinances:transactions';
@@ -55,20 +68,26 @@ export function Resume(){
             });
 
             if(categorySum > 0) {
-                const total = categorySum
+                const totalFormatted = categorySum
                 .toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
-                })
+                });
+
+                const percent = `${(categorySum / expensivesTotal * 100).toFixed(0)}%`;
 
                 totalByCategory.push({ // adiciona um novo objeto
                     key: category.key,
                     name: category.name,
                     color: category.color,
-                    total
+                    total: categorySum,
+                    totalFormatted,
+                    percent,
                 });
             }
         });
+
+        console.log(totalByCategory)
 
         setTotalByCategories(totalByCategory);
     }
@@ -82,13 +101,49 @@ export function Resume(){
         <Header>
             <Title>Resumo por categoria</Title>
         </Header>
-        <Content>
+        <Content
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+                paddingHorizontal: 24,
+                paddingBottom: useBottomTabBarHeight(),
+            }}
+        >
+
+           <MonthSelect>
+               <MonthSelectButton>
+                   <MonthSelectIcon name="chevron-left"/>
+               </MonthSelectButton>
+
+               <Month>Maio</Month>
+               
+               <MonthSelectButton>
+                   <MonthSelectIcon name="chevron-right"/>
+               </MonthSelectButton>
+           </MonthSelect>
+
+
+            <ChartContainer>
+            <VictoryPie 
+                data={totalByCategories}
+                colorScale={totalByCategories.map(category => category.color)}
+                style={{
+                    labels: { 
+                        fontSize: RFValue(18),
+                        fontWeight: 'bold',
+                        fill: theme.colors.shape
+                    }
+                }}
+                labelRadius={50}
+                x="percent"
+                y="total"
+            />
+            </ChartContainer>
         {
             totalByCategories.map(item => (
                 <HistoryCard 
                     key={item.key}
                     title={item.name}
-                    amount={item.total}
+                    amount={item.totalFormatted}
                     color={item.color}
                 />
             ))
