@@ -3,6 +3,10 @@ import React from 'react';
 import AppleSvg from '../../assets/apple.svg';
 import GoogleSvg from '../../assets/google.svg';
 
+import { useAuth } from '../../hooks/auth';
+
+import { SignInSocialButton } from '../../components/SignInSocialButton';
+
 import {
     Container,
     LogoSvg,
@@ -12,9 +16,13 @@ import {
     Title,
     SignInTitle,
     Footer,
+    FooterWrapper,
 } from './styles';
 
 export function SignIn(){
+    const { user } = useAuth();
+    console.log(user);
+
     return (
         <Container>
             <Header>
@@ -37,6 +45,17 @@ export function SignIn(){
             </Header>
 
             <Footer>
+                <FooterWrapper>
+                    <SignInSocialButton 
+                        title="Entrar com Google"
+                        svg={GoogleSvg}
+                    />
+
+                    <SignInSocialButton 
+                        title="Entrar com Apple"
+                        svg={AppleSvg}
+                    />
+                </FooterWrapper>
 
             </Footer>
         </Container>
