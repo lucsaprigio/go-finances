@@ -6,6 +6,8 @@ import React, {
 } from 'react';
 
 import * as Google from 'expo-google-app-auth';
+import * as AppleAuthentication from 'expo-apple-authentication';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthProviderProps {
@@ -15,6 +17,7 @@ interface AuthProviderProps {
 interface IAuthContextData {
     user: User;
     signInWithGoogle(): Promise<void>;
+    signInWithApple(): Promise<void>;
 }
 
 interface User {
@@ -55,10 +58,39 @@ function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
+    async function signInWithApple(){
+        try{
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL
+                ]
+            });
+
+            if(credential){
+                const userLogged = {
+                    id: String(credential.user),
+                    email: credential.email!,
+                    name: credential.fullName!.givenName!,
+                    photo: undefined
+                }
+
+                setUser(userLogged);
+                await AsyncStorage.setItem('@gofinances:user', JSON.stringify(userLogged));
+            }
+
+
+
+        } catch(error) {
+            throw new Error(error);
+        }
+    }
+
     return(
         <AuthContext.Provider value={{ 
                 user,
-                signInWithGoogle
+                signInWithGoogle,
+                signInWithApple
             }}>
             { children }
         </AuthContext.Provider>
